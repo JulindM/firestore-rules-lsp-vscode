@@ -6,6 +6,7 @@
   "engines": {
     "vscode": "^1.95.0"
   },
+  "publisher": "julindm",
   "categories": [
     "Programming Languages"
   ],

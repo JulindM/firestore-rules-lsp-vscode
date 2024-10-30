@@ -1,6 +1,4 @@
-import { SocketTransport } from "./../node_modules/vscode-jsonrpc/lib/node/main.d";
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
+import { log } from "console";
 import * as vscode from "vscode";
 import { workspace } from "vscode";
 import {
@@ -8,24 +6,27 @@ import {
   ServerOptions,
   LanguageClientOptions,
   TransportKind,
+  SemanticTokensRequest,
+  SemanticTokensDeltaRequest,
 } from "vscode-languageclient/node";
 
 export async function activate(context: vscode.ExtensionContext) {
+  const outChannel = vscode.window.createOutputChannel("Firestore Rules LSP");
+
   const startServerCommand = context.asAbsolutePath("server");
 
-  // If the extension is launched in debug mode then the debug server options are used
-  // Otherwise the run options are used
   const serverOptions: ServerOptions = {
     command: startServerCommand,
-    transport: TransportKind.stdio,
+    transport: {
+      kind: TransportKind.socket,
+      port: 1234,
+    },
   };
 
-  // Options to control the language client
   const clientOptions: LanguageClientOptions = {
-    // Register the server for plain text documents
     documentSelector: [{ scheme: "file", language: "firestore-rules" }],
     synchronize: {
-      fileEvents: workspace.createFileSystemWatcher("**/.rules"),
+      fileEvents: workspace.createFileSystemWatcher("**/*.rules"),
     },
   };
 
@@ -37,15 +38,14 @@ export async function activate(context: vscode.ExtensionContext) {
     clientOptions
   );
 
-  // Start the client. This will also launch the server
   try {
-    vscode.window.showInformationMessage("Starting server");
+    outChannel.appendLine("Starting server");
     await client.start().then(
       () => {
-        vscode.window.showInformationMessage("Server started");
+        outChannel.appendLine("Server started");
       },
       (reason) => {
-        vscode.window.showInformationMessage(reason);
+        outChannel.appendLine(`Server died: ${reason}`);
       }
     );
   } catch (e) {
@@ -57,9 +57,73 @@ export async function activate(context: vscode.ExtensionContext) {
       err = e.message; // works, `e` narrowed to Error
     }
 
-    vscode.window.showInformationMessage(err);
+    outChannel.append(`Server died: ${err}`);
+
+    return;
+  }
+
+  const semanticTokensProvider =
+    client.initializeResult?.capabilities.semanticTokensProvider;
+
+  outChannel.appendLine(
+    `Registering a semantic tokens provider with legend ${semanticTokensProvider?.legend.tokenTypes}`
+  );
+
+  context.subscriptions.push(
+    vscode.languages.registerDocumentSemanticTokensProvider(
+      clientOptions.documentSelector!,
+      new FRRulesSemanticTokensProvider(client, outChannel),
+      semanticTokensProvider?.legend!
+    )
+  );
+}
+
+class FRRulesSemanticTokensProvider
+  implements vscode.DocumentSemanticTokensProvider
+{
+  private client: LanguageClient;
+  private outChannel: vscode.OutputChannel;
+
+  constructor(client: LanguageClient, outChannel: vscode.OutputChannel) {
+    this.client = client;
+    this.outChannel = outChannel;
+  }
+
+  async provideDocumentSemanticTokens(
+    document: vscode.TextDocument,
+    token: vscode.CancellationToken
+  ): Promise<vscode.SemanticTokens> {
+    this.outChannel.appendLine(`Sending semantic tokens request`);
+
+    let result = await this.client.sendRequest(SemanticTokensRequest.type, {
+      textDocument: {
+        uri: document.uri.toString(),
+      },
+    });
+
+    this.outChannel.appendLine(`Got result ${(result?.data.length ?? 0) / 5}`);
+
+    if (!result) {
+      return { resultId: undefined, data: new Uint32Array() };
+    }
+
+    this.outChannel.appendLine(
+      `Tokenization \n${[...chunks(result.data ?? [], 5)].join("\n")}`
+    );
+
+    const u32IntResult = {
+      resultId: result.resultId,
+      data: new Uint32Array(result.data),
+    };
+
+    return u32IntResult;
   }
 }
 
-// This method is called when your extension is deactivated
 export function deactivate() {}
+
+function* chunks(arr: number[], n: number) {
+  for (let i = 0; i < arr.length; i += n) {
+    yield arr.slice(i, i + n);
+  }
+}
