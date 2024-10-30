@@ -1,4 +1,3 @@
-import { log } from "console";
 import * as vscode from "vscode";
 import { workspace } from "vscode";
 import {
@@ -66,7 +65,7 @@ export async function activate(context: vscode.ExtensionContext) {
     client.initializeResult?.capabilities.semanticTokensProvider;
 
   outChannel.appendLine(
-    `Registering a semantic tokens provider with legend ${semanticTokensProvider?.legend.tokenTypes}`
+    `Registering a semantic tokens provider with lsp's legend`
   );
 
   context.subscriptions.push(
@@ -93,23 +92,15 @@ class FRRulesSemanticTokensProvider
     document: vscode.TextDocument,
     token: vscode.CancellationToken
   ): Promise<vscode.SemanticTokens> {
-    this.outChannel.appendLine(`Sending semantic tokens request`);
-
     let result = await this.client.sendRequest(SemanticTokensRequest.type, {
       textDocument: {
         uri: document.uri.toString(),
       },
     });
 
-    this.outChannel.appendLine(`Got result ${(result?.data.length ?? 0) / 5}`);
-
     if (!result) {
       return { resultId: undefined, data: new Uint32Array() };
     }
-
-    this.outChannel.appendLine(
-      `Tokenization \n${[...chunks(result.data ?? [], 5)].join("\n")}`
-    );
 
     const u32IntResult = {
       resultId: result.resultId,
