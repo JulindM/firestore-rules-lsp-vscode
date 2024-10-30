@@ -1,0 +1,52 @@
+{
+  "name": "firestore-security-rules-lsp",
+  "displayName": "Firestore Security Rules LSP",
+  "description": "LSP Extension for the Firebase Firestore Security Rules language",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "author": {
+    "name": "Julind Mara",
+    "email": "marajulind@outlook.com"
+  },
+  
+  "activationEvents": [
+    "onLanguage:firestore-rules"
+  ],
+  "main": "./out/extension.js",
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "contributes": {"languages": [{
+    "id": "firestore-rules",
+    "aliases": [
+      "firestore-rules"
+    ],
+    "extensions": [
+      ".rules"
+    ]
+  }]},
+  "devDependencies": {
+    "@types/mocha": "^10.0.9",
+    "@types/node": "20.x",
+    "@types/vscode": "^1.95.0",
+    "@typescript-eslint/eslint-plugin": "^8.10.0",
+    "@typescript-eslint/parser": "^8.7.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1",
+    "eslint": "^9.13.0",
+    "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  }
+}
