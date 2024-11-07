@@ -1,4 +1,4 @@
-<p align="center"><img src="./firestore-lsp-logo.svg"></img></p>
+<p align="center"><img src="./firestore-lsp-logo.png"></img></p>
 
 # Firestore Rules LSP VSCode Extension
 
