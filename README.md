@@ -10,6 +10,8 @@ Upon preparation the extension simply wraps around it, and can utilze the featur
 
 The LSP runs natively on machine (its not a node app) so that memory and cpu overhead is kept at minium.
 
+The source code of the LSP can be found [here](https://github.com/JulindM/firestore-rules-lsp)
+
 ### Current features
 
 - Linting
