@@ -10,6 +10,7 @@ import {
 } from "vscode-languageclient/node";
 import axios from "axios";
 import AdmZip from "adm-zip";
+import { getPort } from "get-port-please";
 
 const LSP_VER = "0.0.2-alpha";
 const SERVER_EXEC = "firestore-rules-lsp";
@@ -41,7 +42,7 @@ export async function activate(context: vscode.ExtensionContext) {
     command: serverExecPath.fsPath,
     transport: {
       kind: TransportKind.socket,
-      port: 1234,
+      port: await getPort(),
     },
   };
 
