@@ -1,3 +1,4 @@
+import * as url from "url";
 import * as vscode from "vscode";
 import { workspace } from "vscode";
 import {
@@ -6,16 +7,38 @@ import {
   LanguageClientOptions,
   TransportKind,
   SemanticTokensRequest,
-  SemanticTokensDeltaRequest,
 } from "vscode-languageclient/node";
+import axios from "axios";
+import AdmZip from "adm-zip";
+
+const LSP_VER = "0.0.2-alpha";
+const SERVER_EXEC = "firestore-rules-lsp";
 
 export async function activate(context: vscode.ExtensionContext) {
   const outChannel = vscode.window.createOutputChannel("Firestore Rules LSP");
 
-  const startServerCommand = context.asAbsolutePath("server");
+  workspace.fs.createDirectory(context.globalStorageUri);
+
+  try {
+    await prepareLSP(context.globalStorageUri, SERVER_EXEC, outChannel);
+  } catch (e) {
+    if (typeof e === "object") {
+      vscode.window.showErrorMessage(e!.toString());
+    }
+
+    if (typeof e === "string") {
+      vscode.window.showErrorMessage(e);
+    }
+    return;
+  }
+
+  const serverExecPath = vscode.Uri.joinPath(
+    context.globalStorageUri,
+    SERVER_EXEC
+  );
 
   const serverOptions: ServerOptions = {
-    command: startServerCommand,
+    command: serverExecPath.fsPath,
     transport: {
       kind: TransportKind.socket,
       port: 1234,
@@ -92,29 +115,101 @@ class FRRulesSemanticTokensProvider
     document: vscode.TextDocument,
     token: vscode.CancellationToken
   ): Promise<vscode.SemanticTokens> {
-    let result = await this.client.sendRequest(SemanticTokensRequest.type, {
-      textDocument: {
-        uri: document.uri.toString(),
-      },
-    });
+    return this.client
+      .sendRequest(SemanticTokensRequest.type, {
+        textDocument: {
+          uri: document.uri.toString(),
+        },
+      })
+      .then((result) => {
+        if (!result) {
+          return { resultId: undefined, data: new Uint32Array() };
+        }
 
-    if (!result) {
-      return { resultId: undefined, data: new Uint32Array() };
-    }
+        const u32IntResult = {
+          resultId: result.resultId,
+          data: new Uint32Array(result.data),
+        } as vscode.SemanticTokens;
 
-    const u32IntResult = {
-      resultId: result.resultId,
-      data: new Uint32Array(result.data),
-    };
-
-    return u32IntResult;
+        return u32IntResult;
+      });
   }
 }
 
 export function deactivate() {}
 
-function* chunks(arr: number[], n: number) {
-  for (let i = 0; i < arr.length; i += n) {
-    yield arr.slice(i, i + n);
+async function prepareLSP(
+  folder: vscode.Uri,
+  serverExecutable: string,
+  outChannel: vscode.OutputChannel
+): Promise<void> {
+  try {
+    const serverExecPath = vscode.Uri.joinPath(folder, serverExecutable);
+    await workspace.fs.stat(serverExecPath);
+    outChannel.append("LSP already downloaded at " + serverExecPath.fsPath);
+    return;
+  } catch (_) {}
+
+  const arch = process.arch;
+  const platform_name = process.platform;
+  let downloadUrl;
+
+  if (platform_name === "linux" && arch === "x64") {
+    downloadUrl = url.parse(
+      `https://github.com/JulindM/firestore-rules-lsp/releases/download/${LSP_VER}/firestore-rules-lsp-${LSP_VER}-linux_x64.zip`
+    );
   }
+
+  if (platform_name === "win32" && arch === "x64") {
+    downloadUrl = url.parse(
+      `https://github.com/JulindM/firestore-rules-lsp/releases/download/${LSP_VER}/firestore-rules-lsp-${LSP_VER}-win_x64.zip`
+    );
+  }
+
+  if (platform_name === "darwin" && arch === "x64") {
+    downloadUrl = url.parse(
+      `https://github.com/JulindM/firestore-rules-lsp/releases/download/${LSP_VER}/firestore-rules-lsp-${LSP_VER}-mac_x64.zip`
+    );
+  }
+
+  if (platform_name === "darwin" && arch === "arm64") {
+    downloadUrl = url.parse(
+      `https://github.com/JulindM/firestore-rules-lsp/releases/download/${LSP_VER}/firestore-rules-lsp-${LSP_VER}-mac_arm64.zip`
+    );
+  }
+
+  if (!downloadUrl) {
+    throw Error("Platform is not supported");
+  }
+
+  await downloadLSP(folder, serverExecutable, downloadUrl, outChannel);
+}
+
+async function downloadLSP(
+  folder: vscode.Uri,
+  executableName: string,
+  url: url.Url,
+  outChannel: vscode.OutputChannel
+): Promise<void> {
+  let zipBlobResponse = await axios({
+    url: url.href,
+    method: "GET",
+    responseType: "arraybuffer",
+  });
+
+  if (zipBlobResponse.status !== 200) {
+    throw Error("Error getting lsp from " + url.href);
+  }
+
+  let zip = new AdmZip(zipBlobResponse.data);
+
+  let entry = zip
+    .getEntries()
+    .find((e) => e.entryName === "firestore-rules-lsp");
+
+  if (!entry) {
+    throw Error("Entry not found");
+  }
+
+  zip.extractEntryTo(entry, folder.fsPath, false, true, true, executableName);
 }

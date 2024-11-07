@@ -14,7 +14,6 @@
     "name": "Julind Mara",
     "email": "marajulind@outlook.com"
   },
-  
   "activationEvents": [
     "onLanguage:firestore-rules"
   ],
@@ -27,16 +26,27 @@
     "lint": "eslint src",
     "test": "vscode-test"
   },
-  "contributes": {"languages": [{
-    "id": "firestore-rules",
-    "aliases": [
-      "firestore-rules"
-    ],
-    "extensions": [
-      ".rules"
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false,
+      "description": "If the workspace is untrusted, disable the extension to avoid potential code execution exploits"
+    }
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "firestore-rules",
+        "aliases": [
+          "firestore-rules"
+        ],
+        "extensions": [
+          ".rules"
+        ]
+      }
     ]
-  }]},
+  },
   "devDependencies": {
+    "@types/adm-zip": "^0.5.6",
     "@types/mocha": "^10.0.9",
     "@types/node": "20.x",
     "@types/vscode": "^1.95.0",
@@ -48,6 +58,8 @@
     "typescript": "^5.6.3"
   },
   "dependencies": {
+    "adm-zip": "^0.5.16",
+    "axios": "^1.7.7",
     "vscode-languageclient": "^9.0.1"
   }
 }
