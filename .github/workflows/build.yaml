@@ -1,0 +1,17 @@
+name: Build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build_linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm install -g @vscode/vsce
+      - run: npm install
+      - run: vsce package
+      - uses: actions/upload-artifact@v4
+        with:
+          path: ./*.vsix
+          overwrite: true
