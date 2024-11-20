@@ -16,30 +16,34 @@ const LSP_VER = "0.0.2-alpha";
 const SERVER_EXEC = "firestore-rules-lsp";
 
 export async function activate(context: vscode.ExtensionContext) {
-  const outChannel = vscode.window.createOutputChannel("Firestore Rules LSP");
+  const outChannel = vscode.window.createOutputChannel("Firestore LSP Client");
 
-  workspace.fs.createDirectory(context.globalStorageUri);
+  let serverPath: string;
 
-  try {
-    await prepareLSP(context.globalStorageUri, SERVER_EXEC, outChannel);
-  } catch (e) {
-    if (typeof e === "object") {
-      vscode.window.showErrorMessage(e!.toString());
+  if (context.extensionMode === vscode.ExtensionMode.Production) {
+    workspace.fs.createDirectory(context.globalStorageUri);
+
+    try {
+      const serverLocUri = await prepareAndDownloadLSP(context, outChannel);
+      serverPath = serverLocUri.fsPath;
+    } catch (e) {
+      if (typeof e === "object") {
+        vscode.window.showErrorMessage(e!.toString());
+      }
+
+      if (typeof e === "string") {
+        vscode.window.showErrorMessage(e);
+      }
+
+      return;
     }
-
-    if (typeof e === "string") {
-      vscode.window.showErrorMessage(e);
-    }
-    return;
+  } else {
+    serverPath =
+      "/Users/julind/Projects/firestore-rules-lsp/lsp/target/release/firestore-rules-lsp";
   }
 
-  const serverExecPath = vscode.Uri.joinPath(
-    context.globalStorageUri,
-    SERVER_EXEC
-  );
-
   const serverOptions: ServerOptions = {
-    command: serverExecPath.fsPath,
+    command: serverPath,
     transport: {
       kind: TransportKind.socket,
       port: await getPort(),
@@ -56,7 +60,7 @@ export async function activate(context: vscode.ExtensionContext) {
   // Create the language client and start the client.
   const client = new LanguageClient(
     "firestore-language-server-client",
-    "Firestore LSP Client",
+    "Firestore LSP Server",
     serverOptions,
     clientOptions
   );
@@ -139,6 +143,14 @@ class FRRulesSemanticTokensProvider
 
 export function deactivate() {}
 
+async function prepareAndDownloadLSP(
+  context: vscode.ExtensionContext,
+  outChannel: vscode.OutputChannel
+): Promise<vscode.Uri> {
+  await prepareLSP(context.globalStorageUri, SERVER_EXEC, outChannel);
+  return vscode.Uri.joinPath(context.globalStorageUri, SERVER_EXEC);
+}
+
 async function prepareLSP(
   folder: vscode.Uri,
   serverExecutable: string,
@@ -151,32 +163,27 @@ async function prepareLSP(
     return;
   } catch (_) {}
 
+  let prependURL = `https://github.com/JulindM/firestore-rules-lsp/releases/download/${LSP_VER}/firestore-rules-lsp-${LSP_VER}`;
+
   const arch = process.arch;
   const platform_name = process.platform;
+
   let downloadUrl;
 
   if (platform_name === "linux" && arch === "x64") {
-    downloadUrl = url.parse(
-      `https://github.com/JulindM/firestore-rules-lsp/releases/download/${LSP_VER}/firestore-rules-lsp-${LSP_VER}-linux_x64.zip`
-    );
+    downloadUrl = url.parse(`${prependURL}-linux_x64.zip`);
   }
 
   if (platform_name === "win32" && arch === "x64") {
-    downloadUrl = url.parse(
-      `https://github.com/JulindM/firestore-rules-lsp/releases/download/${LSP_VER}/firestore-rules-lsp-${LSP_VER}-win_x64.zip`
-    );
+    downloadUrl = url.parse(`${prependURL}-win_x64.zip`);
   }
 
   if (platform_name === "darwin" && arch === "x64") {
-    downloadUrl = url.parse(
-      `https://github.com/JulindM/firestore-rules-lsp/releases/download/${LSP_VER}/firestore-rules-lsp-${LSP_VER}-mac_x64.zip`
-    );
+    downloadUrl = url.parse(`${prependURL}-mac_x64.zip`);
   }
 
   if (platform_name === "darwin" && arch === "arm64") {
-    downloadUrl = url.parse(
-      `https://github.com/JulindM/firestore-rules-lsp/releases/download/${LSP_VER}/firestore-rules-lsp-${LSP_VER}-mac_arm64.zip`
-    );
+    downloadUrl = url.parse(`${prependURL}-mac_arm64.zip`);
   }
 
   if (!downloadUrl) {
