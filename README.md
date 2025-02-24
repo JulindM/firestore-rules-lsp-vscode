@@ -4,7 +4,9 @@
 
 > This extension is currently in alpha
 
-This extension in comparison to others available in the market place, utilizes a LSP (Language Server Provider) and does not rely on semantic calculations on the extension level.
+<p align="center"><img src="./example.gif"></img></p>
+
+This extension in comparison to others available in the market place, utilizes a LSP (Language Server Provider) and does not rely on semantic calculations on the extension level.>
 
 Upon preparation the extension simply wraps around it, and can utilze the features that the LSP is able to provide instead of running its own calculations.
 
@@ -14,11 +16,11 @@ The source code of the LSP can be found [here](https://github.com/JulindM/firest
 
 ### Current features
 
+- Syntax highlighting
+  - Make sure the theme you are using support semantic color tokenizations, otherwise you will not see colors. The default VSCode theme does have this feature.
+- Autocomplete
+  - You might want to close the `return` or `let` expression with a `;` currently in this alpha to let the type inference work during line declaration
 - Linting
+- Type inference (In conjuction with the autocomplete)
 - Syntax errors
 - Definition support
-- Syntax highlighting
-
-### Features coming later
-
-- Autocomplete

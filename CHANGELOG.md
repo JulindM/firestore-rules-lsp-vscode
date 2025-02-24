@@ -1,9 +1,10 @@
-# Change Log
-
-All notable changes to the "firestore-security-rules-lsp" extension will be documented in this file.
-
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
-
 ## [Unreleased]
 
-- Initial release
+Initial release
+
+## [0.1.0] - 2025-02-25
+
+### Added
+
+- Autocomplete
+- Automatic undefined variable diagnostics
