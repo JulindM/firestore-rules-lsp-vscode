@@ -12,7 +12,7 @@ import axios from "axios";
 import AdmZip from "adm-zip";
 import { getPort } from "get-port-please";
 
-const LSP_VER = "0.1.0-alpha";
+const LSP_VER = "0.2.0-alpha";
 const SERVER_EXEC = "firestore-rules-lsp" + LSP_VER.replaceAll(".", "-");
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -161,7 +161,18 @@ async function prepareLSP(
     await workspace.fs.stat(serverExecPath);
     outChannel.append("LSP already downloaded at " + serverExecPath.fsPath);
     return;
-  } catch (_) {}
+  } catch (_) {
+    workspace.fs.readDirectory(folder).then((files) => {
+      if (!files) {
+        return [];
+      }
+
+      files.map(
+        async (file) =>
+          await workspace.fs.delete(vscode.Uri.joinPath(folder, file[0]))
+      );
+    });
+  }
 
   let prependURL = `https://github.com/JulindM/firestore-rules-lsp/releases/download/${LSP_VER}/firestore-rules-lsp-${LSP_VER}`;
 
@@ -190,14 +201,20 @@ async function prepareLSP(
     throw Error("Platform is not supported");
   }
 
-  await downloadLSP(folder, serverExecutable, downloadUrl, outChannel);
+  await vscode.window.withProgress(
+    {
+      location: vscode.ProgressLocation.Notification,
+      cancellable: false,
+      title: `Downloading Firestore LSP ${LSP_VER}`,
+    },
+    () => downloadLSP(folder, serverExecutable, downloadUrl)
+  );
 }
 
 async function downloadLSP(
   folder: vscode.Uri,
   executableName: string,
-  url: url.Url,
-  outChannel: vscode.OutputChannel
+  url: url.Url
 ): Promise<void> {
   let zipBlobResponse = await axios({
     url: url.href,
