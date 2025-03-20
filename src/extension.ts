@@ -12,7 +12,7 @@ import axios from "axios";
 import AdmZip from "adm-zip";
 import { getPort } from "get-port-please";
 
-const LSP_VER = "0.2.0-alpha";
+const LSP_VER = "0.2.1-alpha";
 const SERVER_EXEC = "firestore-rules-lsp" + LSP_VER.replaceAll(".", "-");
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -39,7 +39,7 @@ export async function activate(context: vscode.ExtensionContext) {
     }
   } else {
     serverPath =
-      "/Users/julind/Projects/firestore-rules-lsp/lsp/target/release/firestore-rules-lsp";
+      "/Users/julind/Projects/firestore-rules-lsp/lsp/target/debug/firestore-rules-lsp";
   }
 
   const serverOptions: ServerOptions = {

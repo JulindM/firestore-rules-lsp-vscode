@@ -2,7 +2,7 @@
   "name": "firestore-security-rules-lsp",
   "displayName": "Firestore Security Rules LSP",
   "description": "LSP Extension for the Firebase Firestore Security Rules language",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "repository": {
     "url": "https://github.com/JulindM/firestore-rules-lsp-vscode"
   },
@@ -21,14 +21,15 @@
   "activationEvents": [
     "onLanguage:firestore-rules"
   ],
-  "main": "./out/extension.js",
+  "main": "./dist/extension.js",
   "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "pretest": "npm run compile && npm run lint",
-    "lint": "eslint src",
-    "test": "vscode-test"
+    "compile": "npm run check-types && node esbuild.js",
+    "check-types": "tsc --noEmit",
+    "watch": "npm-run-all -p watch:*",
+    "watch:esbuild": "node esbuild.js --watch",
+    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+    "vscode:prepublish": "npm run package",
+    "package": "npm run check-types && node esbuild.js --production"
   },
   "capabilities": {
     "untrustedWorkspaces": {
@@ -58,6 +59,7 @@
     "@typescript-eslint/parser": "^8.7.0",
     "@vscode/test-cli": "^0.0.10",
     "@vscode/test-electron": "^2.4.1",
+    "esbuild": "^0.25.1",
     "eslint": "^9.13.0",
     "typescript": "^5.6.3"
   },
