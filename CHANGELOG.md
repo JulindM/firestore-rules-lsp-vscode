@@ -24,3 +24,9 @@ Initial release
 - Bundle the extension
 - Bugfix missing `is` operator
 - Updated LSP Backend to 0.2.1-alpha
+
+## [0.2.0] - 2025-10-11
+
+### Changes
+
+- Updated LSP Backend to 0.3.1-beta ([changelog](https://github.com/JulindM/firestore-rules-lsp/releases/tag/0.3.1-beta))

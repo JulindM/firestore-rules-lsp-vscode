@@ -12,7 +12,7 @@ import axios from "axios";
 import AdmZip from "adm-zip";
 import { getPort } from "get-port-please";
 
-const LSP_VER = "0.2.1-alpha";
+const LSP_VER = "0.3.1-beta";
 const SERVER_EXEC = "firestore-rules-lsp" + LSP_VER.replaceAll(".", "-");
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -22,6 +22,8 @@ export async function activate(context: vscode.ExtensionContext) {
 
   if (context.extensionMode === vscode.ExtensionMode.Production) {
     workspace.fs.createDirectory(context.globalStorageUri);
+
+    outChannel.appendLine("Loading LSP to " + context.globalStorageUri.fsPath);
 
     try {
       const serverLocUri = await prepareAndDownloadLSP(context, outChannel);
@@ -41,6 +43,8 @@ export async function activate(context: vscode.ExtensionContext) {
     serverPath =
       "/Users/julind/Projects/firestore-rules-lsp/lsp/target/debug/firestore-rules-lsp";
   }
+
+  outChannel.appendLine("Using LSP at " + serverPath);
 
   const serverOptions: ServerOptions = {
     command: serverPath,
