@@ -12,7 +12,7 @@ import axios from "axios";
 import AdmZip from "adm-zip";
 import { getPort } from "get-port-please";
 
-const LSP_VER = "0.3.2-beta";
+const LSP_VER = "0.4.0-beta";
 const SERVER_EXEC = "firestore-rules-lsp" + LSP_VER.replaceAll(".", "-");
 
 export async function activate(context: vscode.ExtensionContext) {

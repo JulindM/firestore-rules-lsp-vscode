@@ -19,6 +19,7 @@ The source code of the LSP can be found [here](https://github.com/JulindM/firest
 - Autocomplete
   - You might want to close the `return` or `let` expression with a `;` currently in this alpha to let the type inference work during line declaration
 - Linting
+  - Wrong return type for `if` rules
 - Method/Variable documentation
 - Type inference (In conjuction with the autocomplete)
 - Syntax errors
