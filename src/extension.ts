@@ -13,7 +13,6 @@ import AdmZip from "adm-zip";
 import { getPort } from "get-port-please";
 
 const LSP_VER = "0.4.0-beta";
-const SERVER_EXEC = "firestore-rules-lsp" + LSP_VER.replaceAll(".", "-");
 
 export async function activate(context: vscode.ExtensionContext) {
   const outChannel = vscode.window.createOutputChannel("Firestore LSP Client");
@@ -88,7 +87,7 @@ export async function activate(context: vscode.ExtensionContext) {
       err = e.message; // works, `e` narrowed to Error
     }
 
-    outChannel.append(`Server died: ${err}`);
+    outChannel.appendLine(`Server died: ${err}`);
 
     return;
   }
@@ -151,37 +150,20 @@ async function prepareAndDownloadLSP(
   context: vscode.ExtensionContext,
   outChannel: vscode.OutputChannel
 ): Promise<vscode.Uri> {
-  await prepareLSP(context.globalStorageUri, SERVER_EXEC, outChannel);
-  return vscode.Uri.joinPath(context.globalStorageUri, SERVER_EXEC);
+  return prepareLSP(context.globalStorageUri, outChannel);
 }
+
+const SERVER_EXEC_FILENAME =
+  "firestore-rules-lsp" + LSP_VER.replaceAll(".", "-");
 
 async function prepareLSP(
   folder: vscode.Uri,
-  serverExecutable: string,
   outChannel: vscode.OutputChannel
-): Promise<void> {
-  try {
-    const serverExecPath = vscode.Uri.joinPath(folder, serverExecutable);
-    await workspace.fs.stat(serverExecPath);
-    outChannel.append("LSP already downloaded at " + serverExecPath.fsPath);
-    return;
-  } catch (_) {
-    workspace.fs.readDirectory(folder).then((files) => {
-      if (!files) {
-        return [];
-      }
-
-      files.map(
-        async (file) =>
-          await workspace.fs.delete(vscode.Uri.joinPath(folder, file[0]))
-      );
-    });
-  }
-
-  let prependURL = `https://github.com/JulindM/firestore-rules-lsp/releases/download/${LSP_VER}/firestore-rules-lsp-${LSP_VER}`;
-
+): Promise<vscode.Uri> {
+  const prependURL = `https://github.com/JulindM/firestore-rules-lsp/releases/download/${LSP_VER}/firestore-rules-lsp-${LSP_VER}`;
   const arch = process.arch;
   const platform_name = process.platform;
+  let execfile_extension = "";
 
   let downloadUrl;
 
@@ -191,6 +173,7 @@ async function prepareLSP(
 
   if (platform_name === "win32" && arch === "x64") {
     downloadUrl = url.parse(`${prependURL}-win_x64.zip`);
+    execfile_extension = ".exe";
   }
 
   if (platform_name === "darwin" && arch === "x64") {
@@ -205,7 +188,27 @@ async function prepareLSP(
     throw Error("Platform is not supported");
   }
 
-  await vscode.window.withProgress(
+  const serverExecutable = SERVER_EXEC_FILENAME + execfile_extension;
+
+  try {
+    const serverExecPath = vscode.Uri.joinPath(folder, serverExecutable);
+    await workspace.fs.stat(serverExecPath);
+    outChannel.appendLine("LSP already downloaded at " + serverExecPath.fsPath);
+    return serverExecPath;
+  } catch (_) {
+    workspace.fs.readDirectory(folder).then((files) => {
+      if (!files) {
+        return [];
+      }
+
+      files.map(
+        async (file) =>
+          await workspace.fs.delete(vscode.Uri.joinPath(folder, file[0]))
+      );
+    });
+  }
+
+  return vscode.window.withProgress(
     {
       location: vscode.ProgressLocation.Notification,
       cancellable: false,
@@ -219,7 +222,7 @@ async function downloadLSP(
   folder: vscode.Uri,
   executableName: string,
   url: url.Url
-): Promise<void> {
+): Promise<vscode.Uri> {
   let zipBlobResponse = await axios({
     url: url.href,
     method: "GET",
@@ -232,13 +235,21 @@ async function downloadLSP(
 
   let zip = new AdmZip(zipBlobResponse.data);
 
-  let entry = zip
-    .getEntries()
-    .find((e) => e.entryName === "firestore-rules-lsp");
+  let entries = zip.getEntries();
+
+  if (entries.length === 0) {
+    throw Error("No entries found in zip");
+  }
+
+  let entry = entries.find(
+    (e) => e.entryName.match("firestore-rules-lsp") !== null
+  );
 
   if (!entry) {
-    throw Error("Entry not found");
+    throw Error("LSP executable not found");
   }
 
   zip.extractEntryTo(entry, folder.fsPath, false, true, true, executableName);
+
+  return vscode.Uri.joinPath(folder, executableName);
 }
