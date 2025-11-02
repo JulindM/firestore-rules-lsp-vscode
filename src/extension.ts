@@ -12,7 +12,7 @@ import axios from "axios";
 import AdmZip from "adm-zip";
 import { getPort } from "get-port-please";
 
-const LSP_VER = "0.4.0-beta";
+const LSP_VER = "0.4.1-beta";
 
 export async function activate(context: vscode.ExtensionContext) {
   const outChannel = vscode.window.createOutputChannel("Firestore LSP Client");
