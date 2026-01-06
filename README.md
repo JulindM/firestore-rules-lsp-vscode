@@ -17,7 +17,6 @@ The source code of the LSP can be found [here](https://github.com/JulindM/firest
 - Syntax highlighting
   - Make sure the theme you are using support semantic color tokenizations, otherwise you will not see colors. The default VSCode theme does have this feature.
 - Autocomplete
-  - You might want to close the `return` or `let` expression with a `;` currently in this alpha to let the type inference work during line declaration
 - Linting
   - Wrong return type for `if` rules
 - Method/Variable documentation
