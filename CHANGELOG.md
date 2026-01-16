@@ -29,7 +29,7 @@ Initial release
 
 ### Changes
 
-- Updated LSP Backend to 0.3.1-beta ([changelog](https://github.com/JulindM/firestore-rules-lsp/releases/tag/0.3.1-beta))\
+- Updated LSP Backend to 0.3.1-beta ([changelog](https://github.com/JulindM/firestore-rules-lsp/releases/tag/0.3.1-beta))
 
 ## [0.2.1] - 2025-10-15
 
@@ -42,3 +42,9 @@ Initial release
 ### Changes
 
 - Updated LSP Backend to 0.4.0-beta ([changelog](https://github.com/JulindM/firestore-rules-lsp/releases/tag/0.4.0-beta))
+
+## [0.5.0] - 2026-01-16
+
+### Changes
+
+- Updated LSP Backend to 0.6.0 ([changelog](https://github.com/JulindM/firestore-rules-lsp/releases/tag/0.6.0))
