@@ -2,7 +2,7 @@
   "name": "firestore-security-rules-lsp",
   "displayName": "Firestore Security Rules LSP",
   "description": "LSP Extension for the Firebase Firestore Security Rules language",
-  "version": "0.5.0",
+  "version": "0.7.0",
   "repository": {
     "url": "https://github.com/JulindM/firestore-rules-lsp-vscode"
   },
@@ -51,22 +51,22 @@
     ]
   },
   "devDependencies": {
-    "@types/adm-zip": "^0.5.6",
-    "@types/mocha": "^10.0.9",
+    "@types/adm-zip": "^0.5.8",
+    "@types/mocha": "^10.0.10",
     "@types/node": "20.x",
     "@types/vscode": "^1.95.0",
-    "@typescript-eslint/eslint-plugin": "^8.10.0",
-    "@typescript-eslint/parser": "^8.7.0",
-    "@vscode/test-cli": "^0.0.10",
-    "@vscode/test-electron": "^2.4.1",
-    "esbuild": "^0.25.1",
-    "eslint": "^9.13.0",
-    "typescript": "^5.6.3"
+    "@typescript-eslint/eslint-plugin": "^8.58.2",
+    "@typescript-eslint/parser": "^8.58.2",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.5.2",
+    "esbuild": "^0.28.0",
+    "eslint": "^10.2.1",
+    "typescript": "^6.0.3"
   },
   "dependencies": {
-    "adm-zip": "^0.5.16",
-    "axios": "^1.7.7",
-    "get-port-please": "^3.1.2",
+    "adm-zip": "^0.5.17",
+    "axios": "^1.15.0",
+    "get-port-please": "^3.2.0",
     "vscode-languageclient": "^9.0.1"
   }
 }
