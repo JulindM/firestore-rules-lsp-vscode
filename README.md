@@ -25,5 +25,7 @@ The source code of the LSP can be found [here](https://github.com/JulindM/firest
   - Wrong return type for `if` rules
   - Unused variable definition
   - Unused function declaration
+  - Recursive function calls
+  - More than ten `let` variable bindings
 - Method/Variable documentation
 - Syntax errors
