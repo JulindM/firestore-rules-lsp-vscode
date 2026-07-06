@@ -2,7 +2,7 @@
   "name": "firestore-security-rules-lsp",
   "displayName": "Firestore Security Rules LSP",
   "description": "LSP Extension for the Firebase Firestore Security Rules language",
-  "version": "0.9.2",
+  "version": "0.9.3",
   "repository": {
     "url": "https://github.com/JulindM/firestore-rules-lsp-vscode"
   },
