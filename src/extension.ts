@@ -51,7 +51,7 @@ export async function activate(context: vscode.ExtensionContext) {
     command: serverPath,
     transport: {
       kind: TransportKind.socket,
-      port: await getPort(),
+      port: await getPort({ random: true }),
     },
   };
 
