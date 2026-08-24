@@ -21,6 +21,7 @@ The source code of the LSP can be found [here](https://github.com/JulindM/firest
 - Go to definition
 - Find references
 - Type inference
+- Symbol rename
 - Linting
   - Wrong return type for `if` rules
   - Unused variable definition
